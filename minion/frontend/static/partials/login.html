@@ -5,12 +5,15 @@
 -->
 
 <div class="container" ng-controller="LoginController">
-  <form class="form-signin" id="signin-form">
+  <form class="form-signin" id="signin-form" ng-submit="signIn()" >
     <h2 class="form-signin-heading">Welcome to Minion</h2>
-    <p><b>Note:</b> This application requires Persona to sign in.</p>
+    <!--p><b>Note:</b> This application requires Persona to sign in.</pi-->
     <div class="alert alert-error" ng-show="logInStatus == 'banned'">
         <b>Oh snap!</b> You are banned so you cannot proceed to login.
     </div>
-    <p><a class="btn btn-large btn-primary" ng-click="signIn()"><i class="icon-user"></i> Sign in with Persona</a></p>
+    <!--p><a class="btn btn-large btn-primary" ng-click="signIn()"><i class="icon-user"></i> Sign in with Persona</a></p-->
+    <p><input id="user" name="user" type="text" size="12" maxlength="20" placeholder="Username"></p>
+    <p><input id="password" name="password" type="password" size="12" maxlength="35" placeholder="Password"></p>
+    <p><input type="submit" value="Submit" class="btn btn-primary"/></p>
   </form>
 </div>

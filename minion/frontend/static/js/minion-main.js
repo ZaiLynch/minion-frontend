@@ -285,9 +285,73 @@ app.run(function($rootScope, $location) {
     });
 });
 
+// app.controller("LoginController", function($scope, $rootScope, $location, $http) {
+//     $scope.signIn = function() {
+//         navigator.id.request();
+//     };
+// 
+//     $scope.$on('$viewContentLoaded', function() {
+//         // When the login screen is loaded, we logout from Persona and kill our session
+//         // from both the root scope and from localStorage.
+// 
+//         navigator.id.logout();
+//         $rootScope.session = null;
+//         localStorage.setItem('session.email', null);
+//         localStorage.setItem('session.role', null);
+// 
+//         navigator.id.watch({
+//             onlogin: function(assertion) {
+//                 var data = {assertion: assertion};
+//                 $http.post('/api/login', data).success(function(response) {
+//                     if (response.success) {
+//                         // Remember the session in the scope
+//                         $rootScope.session = response.data;
+//                         // Remember the session in local storage
+//                         localStorage.setItem('session.email', response.data.email);
+//                         localStorage.setItem('session.role', response.data.role);
+//                         localStorage.setItem('invitation.id', null);
+//                         // Go to either the nextPath or to the main page
+//                         var nextPath = sessionStorage.getItem('nextPath');
+//                         if (nextPath) {
+//                             $location.path(nextPath).replace();
+//                             sessionStorage.setItem(nextPath, null);
+//                         } else {
+//                             $location.path("/").replace();
+//                         }
+//                     }
+//                 });
+//             },
+//             onlogout: function() {
+//                 // Not used
+//             }
+//         });
+//     });
+// });
+
+
 app.controller("LoginController", function($scope, $rootScope, $location, $http) {
     $scope.signIn = function() {
-        navigator.id.request();
+        //navigator.id.request();
+        data = { "user": document.getElementById('user').value, "password": document.getElementById('password').value }
+        // code below would need to be a function call, shared between LDAP and Persona auth
+        $http.post('/api/login', data).success(function(response) { 
+             if (response.success) {
+                 // Remember the session in the scope
+                 $rootScope.session = response.data;
+                 // Remember the session in local storage
+                 localStorage.setItem('session.email', response.data.email);
+                 localStorage.setItem('session.role', response.data.role);
+                 localStorage.setItem('invitation.id', null);
+                 // Go to either the nextPath or to the main page
+                 var nextPath = sessionStorage.getItem('nextPath');
+                 if (nextPath) {
+                      $location.path(nextPath).replace();
+                      sessionStorage.setItem(nextPath, null);
+                 } else {
+                      $location.path("/").replace();
+                 }
+             }
+        });
     };
 
     $scope.$on('$viewContentLoaded', function() {
@@ -299,33 +363,7 @@ app.controller("LoginController", function($scope, $rootScope, $location, $http)
         localStorage.setItem('session.email', null);
         localStorage.setItem('session.role', null);
 
-        navigator.id.watch({
-            onlogin: function(assertion) {
-                var data = {assertion: assertion};
-                $http.post('/api/login', data).success(function(response) {
-                    if (response.success) {
-                        // Remember the session in the scope
-                        $rootScope.session = response.data;
-                        // Remember the session in local storage
-                        localStorage.setItem('session.email', response.data.email);
-                        localStorage.setItem('session.role', response.data.role);
-                        localStorage.setItem('invitation.id', null);
-                        // Go to either the nextPath or to the main page
-                        var nextPath = sessionStorage.getItem('nextPath');
-                        if (nextPath) {
-                            $location.path(nextPath).replace();
-                            sessionStorage.setItem(nextPath, null);
-                        } else {
-                            $location.path("/").replace();
-                        }
-                    }
-                });
-            },
-            onlogout: function() {
-                // Not used
-            }
-        });
-    });
+   });
 });
 
 app.controller("404Controller", function($scope, $rootScope, $location) {

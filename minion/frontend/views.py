@@ -7,6 +7,7 @@ import functools
 import json
 import pprint
 import sys
+import ldap
 
 from flask import render_template, redirect, url_for, session, jsonify, request, session, Response, g
 
@@ -392,8 +393,43 @@ def robots():
 def api_session():
     return jsonify(success=True, data={'email': session['email'], 'role': session['role']})
 
+# Todo: Switch, depending on config
 @app.route("/api/login", methods=["POST"])
-def persona_login():
+def login():
+    # Needs to have a switch ldap_login / persona_login
+    return ldap_login(request)
+
+def ldap_login(request):
+    try:
+        data = json.loads(request.data)
+        username = data['user']
+        password = data['password']
+        # Change to check cert!!!
+        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+        # Needs to be customized by user
+        l = ldap.initialize("ldaps://ldap.some.domain:636")
+        l.set_option(ldap.OPT_REFERRALS, 0)
+        l.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+        l.set_option(ldap.OPT_X_TLS,ldap.OPT_X_TLS_DEMAND)
+        l.set_option( ldap.OPT_X_TLS_DEMAND, True )
+        auth = "uid=%s,ou=accounts,o=somecompany,c=DE" % username
+        l.simple_bind_s(auth, password)
+        baseDN = "ou=something,ou=somethingelse,o=somecompany,c=DE"
+        searchScope = ldap.SCOPE_SUBTREE
+        retrieveAttributes = ["mail"]
+        searchFilter = "o=%s" % username
+        results = l.search_s(baseDN,searchScope,searchFilter, retrieveAttributes)
+        mail = results[0][1]['mail'][0]
+        user = login_or_create_user(mail)
+        session['email'] = user['email']
+        session['role']  = user['role']
+        return api_session()
+    except:
+        print sys.exc_info()[0]
+        return jsonify(success=False)
+
+
+def persona_login(request):
     if not request.json or 'assertion' not in request.json:
         return jsonify(success=False)
     receipt = verify_assertion(request.json['assertion'], request.host)
